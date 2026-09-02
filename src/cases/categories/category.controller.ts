@@ -10,13 +10,12 @@ export class CategoryController {
   constructor(private readonly service: CategoryService) {}
 
   @Get()
-  findAll() : Promise<Category[]> {
+  findAll(): Promise<Category[]> {
     return this.service.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe)
-  id: string) : Promise<Category> {
+  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Category> {
     return this.service.findOne(id);
   }
 
@@ -27,19 +26,14 @@ export class CategoryController {
 
   @Patch(':id')
   update(
-   @Param('id', ParseUUIDPipe)
-   id: string,
-   @Body()
-   dto: UpdateCategoryDto): Promise<Category> {
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateCategoryDto): Promise<Category> {
     return this.service.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(
-    @Param('id', ParseUUIDPipe)
-    id: string
-  ): Promise<void> {
+  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.service.remove(id);
   }
 }
