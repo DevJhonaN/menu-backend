@@ -3,7 +3,7 @@ import { Category } from "../categories/category.entity";
 import { ManyToOne } from "typeorm/browser";
 import { JoinColumn } from "typeorm/browser";
 
-@Entity('')
+@Entity()
 export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;

@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, IsUUID, MaxLength, MIN } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, IsUUID, MaxLength, Min } from "class-validator";
 
 export class CreateProductDto {
   @IsString()
@@ -11,7 +11,7 @@ export class CreateProductDto {
   description?: string;
 
   @IsNumber({ maxDecimalPlaces: 2 })
-  @MIN(0)  
+  @Min(0)
   price: number;
 
   @IsOptional()
