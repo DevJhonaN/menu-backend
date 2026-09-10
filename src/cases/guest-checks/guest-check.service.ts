@@ -1,12 +1,9 @@
 import { Repository } from "typeorm";
-import { InjectRepository } from "@nestjs/typeorm";
-import { ConflictException, Injectable } from "@nestjs/common";
 import { GuestCheck, GuestCheckStatus } from "./guest-check.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { CreateGuestCheckDto } from "./dto/create-guest-check";
 import { Spot } from "../spots/spot.entity";
-import { NotFoundException } from "@nestjs/common";
-import { BadRequestException } from "@nestjs/common";
-
 
 @Injectable()
 export class GuestCheckService {
@@ -17,50 +14,50 @@ export class GuestCheckService {
 
     @InjectRepository(Spot)
     private readonly spotRepository: Repository<Spot>
-
   ) {}
-
 
   async create(dto: CreateGuestCheckDto): Promise<GuestCheck> {
 
-    // Regra #1: Não se abre comanda em mesa inexistente.
+    //Regra 1: nao se abre comanda em mesa inexistente
     const spot = await this.spotRepository.findOneBy({
-      id: dto.spotID,
+      id: dto.spotId,
       active: true
     });
 
     if (!spot) {
-      throw new NotFoundException('Não foi encontrada uma mesa ativa com esse ID');
+      throw new NotFoundException('Não foi encontrada uma mesa ativa com este ID');
     }
 
-    // Regra #2: Não se abre comanda em mesa que EXISTA uma comanda aberta.
+    // Regra 2: Nao se abre comanda em mesa que exista comanda em mesa com comanda aberta.
     const opened = await this.guestCheckRepository.exists({
-      where: { spot : { id: dto.spotID }, status: GuestCheckStatus.OPENED}
-    });
+      where: {
+        spot: { id: dto.spotId },
+        status: GuestCheckStatus.OPENED
+      }
+    })
 
     if (opened) {
       throw new ConflictException('A mesa já possui uma comanda em aberto');
     }
 
-    // Se chegou aqui, deu boa.. Grava o registro
-    const guestCkeck = this.guestCheckRepository.create({
+    // Se chegou aquim deu boa.. grava o registro
+    const guestCheck = this.guestCheckRepository.create({
       spot,
       status: GuestCheckStatus.OPENED
     });
-    
-    return this.guestCheckRepository.save(guestCkeck);
 
+    return this.guestCheckRepository.save(guestCheck);
   }
 
-   async findOne(id: string): Promise<GuestCheck> {
-      const guestCheck = await this.guestCheckRepository.findOneBy({ id });
+  async findOne(id: string): Promise<GuestCheck> {
+    const guestCheck = await this.guestCheckRepository.findOneBy({ id });
   
-      if (!guestCheck) {
-        throw new NotFoundException('Comanda não encontrada!');
-      }
-  
-      return guestCheck;
+    if (!guestCheck) {
+      throw new NotFoundException('Comanda não encontrada');
     }
+  
+    return guestCheck;
+  }
 
   async close(id: string): Promise<GuestCheck> {
     const guestCheck = await this.findOne(id);
@@ -71,7 +68,7 @@ export class GuestCheckService {
     }
 
     //Regra #2: Não posso fechar uma comanda com pedidos que não foram entregues.
-    //To_Do: Implementar isso depois (divída técnica)
+    // To do: immplementar isso dps
 
     // Se chegou aqui, deu certo!
     guestCheck.status = GuestCheckStatus.CLOSED;
@@ -79,9 +76,24 @@ export class GuestCheckService {
     return this.guestCheckRepository.save(guestCheck);
   }
 
+  findOpenedBySpotid(spotId: string): Promise<GuestCheck | null> {
+    return this.guestCheckRepository.findOne({
+      where:{
+        spot: { id: spotId },
+        status: GuestCheckStatus.OPENED
+      },
+      relations: {spot: true}
+    })
+  }
 
+  async findOrCreateOpened(spotId: string): Promise<GuestCheck> {
+    const opened = await this.findOpenedBySpotid(spotId);
 
+    if(opened){
+      return opened;
+    }
 
-
+    return this.create({ spotId });
+  }
 
 }

@@ -1,6 +1,4 @@
-import { IsUUID } from "class-validator/types/decorator/string/IsUUID";
-
-
+import { IsUUID } from "class-validator";
 export class CreateGuestCheckDto {
   @IsUUID() 
   spotID: string;
