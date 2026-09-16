@@ -76,7 +76,7 @@ export class GuestCheckService {
     return this.guestCheckRepository.save(guestCheck);
   }
 
-  findOpenedBySpotid(spotId: string): Promise<GuestCheck | null> {
+findOpenedBySpotid(spotId: string): Promise<GuestCheck | null> {
     return this.guestCheckRepository.findOne({
       where:{
         spot: { id: spotId },
